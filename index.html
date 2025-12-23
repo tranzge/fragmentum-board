@@ -1,0 +1,1642 @@
+<!doctype html>
+<html lang="es" data-theme="google">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Momentum</title>
+  <style>
+    /* ========= Google/Apple-like UI (offline, no deps) ========= */
+    :root{
+      --bg:#f6f7fb;
+      --surface: rgba(255,255,255,.82);
+      --card:#ffffff;
+      --text:#202124;
+      --muted:#5f6368;
+      --border:rgba(32,33,36,.14);
+      --accent:#1a73e8;
+      --accent-2:#9334e6;
+      --danger:#d93025;
+      --ok:#188038;
+      --shadow-1: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.07);
+      --shadow-2: 0 10px 30px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.08);
+      --r1:12px;
+      --r2:16px;
+      --ring: 0 0 0 3px rgba(26,115,232,.22);
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    html[data-theme="apple"]{
+      --bg:#f2f2f7;
+      --surface: rgba(255,255,255,.78);
+      --card: rgba(255,255,255,.92);
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:rgba(15,23,42,.10);
+      --accent:#2563eb;
+      --accent-2:#7c3aed;
+      --shadow-1: 0 1px 2px rgba(0,0,0,.06), 0 10px 30px rgba(0,0,0,.08);
+      --shadow-2: 0 12px 36px rgba(0,0,0,.14), 0 2px 10px rgba(0,0,0,.10);
+      --ring: 0 0 0 3px rgba(37,99,235,.22);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 800px at 10% -10%, rgba(26,115,232,.11), transparent 55%),
+        radial-gradient(900px 600px at 110% 0%, rgba(147,52,230,.10), transparent 50%),
+        var(--bg);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    header{
+      position: sticky; top:0; z-index: 50;
+      background: linear-gradient(to bottom, var(--surface), rgba(255,255,255,0));
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 14px 18px;
+      gap: 12px;
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+    .brand{
+      display:flex; align-items:center; gap: 10px;
+      font-weight: 700;
+      letter-spacing: .2px;
+      font-size: 18px;
+    }
+    .brand .dot{
+      width: 12px; height: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 99px;
+      box-shadow: var(--shadow-1);
+    }
+
+    .controls{
+      display:flex; align-items:center; gap: 10px; flex-wrap:wrap;
+    }
+    .seg{
+      display:flex; gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255,255,255,.55);
+    }
+    .seg button{
+      border:0;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-weight: 600;
+      transition: background .15s ease, color .15s ease, transform .08s ease;
+    }
+    .seg button.active{
+      background: rgba(26,115,232,.12);
+      color: var(--text);
+    }
+    .seg button:active{ transform: translateY(1px); }
+
+    .iconbar{ display:flex; gap: 8px; }
+    .btn-icon{
+      width: 40px; height: 40px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.65);
+      box-shadow: var(--shadow-1);
+      cursor:pointer;
+      display:grid; place-items:center;
+      transition: transform .08s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .btn-icon:hover{ box-shadow: var(--shadow-2); }
+    .btn-icon:active{ transform: translateY(1px); }
+
+    main{
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 16px 18px 40px;
+    }
+
+    .filters{
+      display:flex; align-items:center; gap: 10px; flex-wrap:wrap;
+      padding: 10px 0 12px;
+    }
+    .search{
+      flex: 1 1 260px;
+      min-width: 220px;
+    }
+    input[type="text"], input[type="number"], input[type="date"], textarea, select{
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.92);
+      color: var(--text);
+      padding: 10px 12px;
+      outline:none;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    input:focus, textarea:focus, select:focus{ box-shadow: var(--ring); border-color: rgba(26,115,232,.55); }
+    select{ cursor:pointer; }
+    textarea{
+      border-radius: var(--r1);
+      min-height: 110px;
+      resize: vertical;
+      padding: 12px;
+    }
+
+    .chiprow{
+      display:flex; gap: 8px; flex-wrap:wrap;
+    }
+    .chip{
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.72);
+      color: var(--muted);
+      padding: 8px 10px;
+      font-weight: 600;
+      cursor:pointer;
+      transition: background .15s ease, transform .08s ease, box-shadow .15s ease;
+      user-select:none;
+    }
+    .chip.active{
+      background: rgba(26,115,232,.14);
+      color: var(--text);
+      box-shadow: var(--shadow-1);
+    }
+    .chip:active{ transform: translateY(1px); }
+
+    /* Board */
+    .board{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(240px, 1fr));
+      gap: 12px;
+      align-items:start;
+    }
+    @media (max-width: 1100px){
+      .board{ grid-template-columns: repeat(2, minmax(240px, 1fr)); }
+    }
+    @media (max-width: 640px){
+      .board{ grid-template-columns: 1fr; }
+    }
+    .col{
+      background: rgba(255,255,255,.55);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      box-shadow: var(--shadow-1);
+      overflow:hidden;
+      min-height: 220px;
+    }
+    .colhead{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+    }
+    .colhead small{ font-weight: 600; color: var(--muted); }
+    .cards{ padding: 10px; display:flex; flex-direction:column; gap: 10px; }
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      box-shadow: var(--shadow-1);
+      padding: 10px 10px 10px;
+      cursor:pointer;
+      transition: transform .08s ease, box-shadow .15s ease;
+    }
+    .card:hover{ box-shadow: var(--shadow-2); }
+    .card:active{ transform: translateY(1px); }
+    .title{
+      font-weight: 600;
+      line-height: 1.25;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    .meta{
+      display:flex; gap: 6px; flex-wrap:wrap; align-items:center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .pill{
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      background: rgba(255,255,255,.70);
+      display:inline-flex; gap: 6px; align-items:center;
+      font-weight: 700;
+    }
+    .pill strong{ color: var(--text); font-weight: 700; }
+    .pill.blue{ background: rgba(26,115,232,.10); }
+    .pill.purple{ background: rgba(147,52,230,.10); }
+    .pill.red{ background: rgba(217,48,37,.10); border-color: rgba(217,48,37,.25); color: var(--danger); }
+    .pill.green{ background: rgba(24,128,56,.10); border-color: rgba(24,128,56,.25); color: var(--ok); }
+    .bar{
+      margin-top: 8px;
+      height: 8px;
+      background: rgba(32,33,36,.10);
+      border-radius: 999px;
+      overflow:hidden;
+    }
+    .bar > div{
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+    .muted{ color: var(--muted); }
+
+    /* Calendar (Google-like month grid) */
+    .calWrap{
+      background: rgba(255,255,255,.55);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      box-shadow: var(--shadow-1);
+      overflow:hidden;
+    }
+    .calTop{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+    .calTop .left{
+      display:flex; align-items:center; gap: 10px;
+      font-weight: 700;
+    }
+    .calTop .nav{
+      display:flex; gap: 6px; align-items:center;
+    }
+    .btn{
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.75);
+      padding: 8px 10px;
+      font-weight: 600;
+      cursor:pointer;
+      box-shadow: var(--shadow-1);
+      transition: transform .08s ease, box-shadow .15s ease;
+    }
+    .btn:hover{ box-shadow: var(--shadow-2); }
+    .btn:active{ transform: translateY(1px); }
+    .calGrid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+    .dow{
+      padding: 10px;
+      text-align:center;
+      font-weight: 600;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.60);
+    }
+    .day{
+      min-height: 120px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 8px;
+      background: rgba(255,255,255,.42);
+      position: relative;
+      overflow:hidden;
+      cursor:pointer;
+    }
+    .day:nth-child(7n){ border-right: 0; }
+    .day .num{
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--muted);
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom: 6px;
+    }
+    .badgeToday{
+      font-size: 10px; font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(26,115,232,.14);
+      color: var(--text);
+      border: 1px solid rgba(26,115,232,.25);
+    }
+    .events{
+      display:flex; flex-direction:column; gap: 6px;
+      max-height: 92px;
+      overflow:hidden;
+    }
+    .evt{
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.88);
+      padding: 6px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      cursor:pointer;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .evt .dot{
+      width: 8px; height: 8px; border-radius: 99px;
+      background: var(--accent);
+      flex: 0 0 auto;
+    }
+    .evt.low .dot{ background: #9aa0a6; }
+    .evt.neutral .dot{ background: var(--accent); }
+    .evt.high .dot{ background: var(--accent-2); }
+    .more{
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      cursor:pointer;
+      user-select:none;
+    }
+
+    /* Popover list for day overflow */
+    .popover{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.28);
+      display:none;
+      align-items: center;
+      justify-content: center;
+      z-index: 70;
+      padding: 16px;
+    }
+    .popover.open{ display:flex; }
+    .popCard{
+      width: min(640px, 96vw);
+      max-height: min(720px, 86vh);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      box-shadow: var(--shadow-2);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .popHead{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+    }
+    .popBody{
+      padding: 12px;
+      overflow:auto;
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+    }
+
+    /* Modal editor (scrollable, no overflow) */
+    .modal{
+      position: fixed;
+      inset: 0;
+      display:none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.32);
+      z-index: 80;
+      padding: 16px;
+    }
+    .modal.open{ display:flex; }
+    .modalCard{
+      width: min(860px, 96vw);
+      max-height: min(840px, 92vh);
+      overflow:hidden;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      box-shadow: var(--shadow-2);
+      display:flex;
+      flex-direction:column;
+    }
+    .modalHead{
+      padding: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.72);
+    }
+    .modalHead .hTitle{ font-weight: 700; }
+    .modalBody{
+      padding: 12px;
+      overflow:auto; /* key: allow big checklists */
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 520px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+    label{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    label .inline{
+      display:flex; gap: 10px; align-items:center;
+    }
+    .row{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-top: 10px;
+      gap: 10px;
+    }
+    .row h3{
+      margin: 16px 0 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .checklist{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+    }
+    .chk{
+      display:grid;
+      grid-template-columns: 20px 1fr 34px;
+      align-items:center;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--r1);
+      background: rgba(255,255,255,.70);
+    }
+    .chk input[type="checkbox"]{
+      width: 18px; height: 18px;
+      cursor:pointer;
+    }
+    .chk .x{
+      width: 30px; height: 30px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.85);
+      cursor:pointer;
+      font-weight: 700;
+    }
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .danger{
+      border-color: rgba(217,48,37,.25)!important;
+      color: var(--danger)!important;
+      background: rgba(217,48,37,.08)!important;
+    }
+
+    /* Scrollbars */
+    *::-webkit-scrollbar{ height:10px; width:10px; }
+    *::-webkit-scrollbar-thumb{
+      background: rgba(95,99,104,.35);
+      border-radius:999px;
+      border: 2px solid rgba(255,255,255,.55);
+    }
+    *::-webkit-scrollbar-track{ background:transparent; }
+
+    /* Utility */
+    .hide{ display:none !important; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>Momentum</div>
+
+    <div class="controls">
+      <div class="seg" role="tablist" aria-label="Vistas">
+        <button id="tabBoard" class="active" type="button">Tablero</button>
+        <button id="tabCal" type="button">Calendario</button>
+        <button id="tabEnergy" type="button">Energía</button>
+      </div>
+      <div class="iconbar">
+        <button class="btn-icon" id="btnAdd" title="Nueva tarea">＋</button>
+        <button class="btn-icon" id="btnImport" title="Importar JSON">📂</button>
+        <button class="btn-icon" id="btnExport" title="Exportar JSON">💾</button>
+        <button class="btn-icon" id="themeToggle" title="Tema">🎨</button>
+      </div>
+      <input id="fileInput" type="file" accept=".json" class="hide"/>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="filters">
+    <div class="search"><input id="q" type="text" placeholder="Buscar…"></div>
+
+    <div style="min-width:260px; flex: 0 0 260px;">
+      <select id="assignFilter" aria-label="Asignación">
+        <option value="all">Asignación: Todas</option>
+        <option value="mine">Asignación: Mías</option>
+        <option value="delegated">Asignación: Delegadas</option>
+        <option value="delegable">Asignación: Delegables</option>
+        <option value="unassigned">Asignación: Sin asignar</option>
+      </select>
+    </div>
+
+    <div class="chiprow" id="dateChips" aria-label="Fechas rápidas">
+      <div class="chip active" data-chip="all">Todas</div>
+      <div class="chip" data-chip="today">Hoy</div>
+      <div class="chip" data-chip="week">Esta semana</div>
+      <div class="chip" data-chip="overdue">Vencidas</div>
+      <div class="chip" data-chip="nodate">Sin fecha</div>
+    </div>
+  </div>
+
+  <!-- Board -->
+  <section id="viewBoard">
+    <div class="board" id="board"></div>
+  </section>
+
+  <!-- Calendar -->
+  <section id="viewCal" class="hide">
+    <div class="calWrap">
+      <div class="calTop">
+        <div class="left">
+          <span id="calLabel">Calendario</span>
+        </div>
+        <div class="nav">
+          <button class="btn" id="calPrev" type="button">◀</button>
+          <button class="btn" id="calToday" type="button">Hoy</button>
+          <button class="btn" id="calNext" type="button">▶</button>
+        </div>
+      </div>
+      <div class="calGrid" id="calGrid"></div>
+    </div>
+  </section>
+
+  <!-- Energy -->
+  <section id="viewEnergy" class="hide">
+    <div class="board" id="energyBoard"></div>
+    <div class="hint">Energía sirve para elegir qué hacer según cómo te sientes hoy: <strong>BAJO</strong> (fácil), <strong>NEUTRO</strong>, <strong>ALTO</strong> (demanda).</div>
+  </section>
+</main>
+
+<!-- Day overflow popover -->
+<div class="popover" id="dayPop">
+  <div class="popCard">
+    <div class="popHead">
+      <div id="popTitle">Día</div>
+      <button class="btn-icon" id="popClose" title="Cerrar">✕</button>
+    </div>
+    <div class="popBody" id="popBody"></div>
+  </div>
+</div>
+
+<!-- Editor Modal -->
+<div class="modal" id="modal">
+  <div class="modalCard">
+    <div class="modalHead">
+      <div class="hTitle" id="modalTitle">Editar</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn" id="btnSave" type="button">Guardar</button>
+        <button class="btn danger" id="btnDelete" type="button">Eliminar</button>
+        <button class="btn-icon" id="btnClose" title="Cerrar">✕</button>
+      </div>
+    </div>
+    <div class="modalBody">
+      <div class="grid">
+        <label>Título
+          <input id="fTitle" type="text" placeholder="Ej. Publicar anuncio en Marketplace…">
+        </label>
+
+        <label>Lista
+          <select id="fList">
+            <option value="semilla">Semilla</option>
+            <option value="incubacion">Incubación</option>
+            <option value="activos">Activos</option>
+            <option value="hecho">Hecho</option>
+          </select>
+        </label>
+
+        <label>Delegable
+          <select id="fDelegable">
+            <option value="no">No</option>
+            <option value="si">Sí</option>
+          </select>
+        </label>
+
+        <label>Delegado a
+          <input id="fDelegatedTo" type="text" placeholder="Ej. Esposa / Cuñada">
+        </label>
+
+        <label>Estimación (min)
+          <input id="fEstimate" type="number" min="0" step="5" placeholder="30">
+        </label>
+
+        <label>Vence
+          <input id="fDue" type="date">
+        </label>
+
+        <label>Energía
+          <select id="fEnergy">
+            <option value="BAJO">BAJO</option>
+            <option value="NEUTRO" selected>NEUTRO</option>
+            <option value="ALTO">ALTO</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="row"><h3>Notas</h3></div>
+      <textarea id="fNotes" placeholder="Contexto / instrucciones / links…"></textarea>
+
+      <div class="row">
+        <h3>Checklist</h3>
+        <button class="btn" id="btnAddChk" type="button">+ Tarea</button>
+      </div>
+      <div class="checklist" id="chkList"></div>
+      <div class="hint">Tip: la barra en la tarjeta se calcula con el checklist (hechas / total).</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========= State ========= */
+const STORAGE_KEY = "momentum_v2";
+const THEME_KEY = "momentum_theme";
+const FTU_KEY = "momentum_ftu_v1";              // first-time tutorial shown
+const TUTORIAL_LIST_ID = "inicio";             // internal list id
+
+function buildTutorialCards(){
+  const mk = (title, notes)=>({
+    id: "tut_" + uid(),
+    title,
+    notes,
+    energy: "NEUTRO",
+    delegable: false,
+    delegatedTo: "",
+    due: "",
+    estimate: 0,
+    checklist: []
+  });
+
+  return [
+    mk("Bienvenida — Uso básico en 60 segundos",
+`Este tablero funciona como un Trello minimalista (offline / web).
+Flujo recomendado:
+1) Crea tarjetas con acciones concretas (ideal ≤ 60 min).
+2) Asigna Vence (fecha) para planear en calendario.
+3) Marca Delegable si alguien más lo puede ejecutar y define Delegado a.
+4) Usa checklist para medir avance real.
+5) Guarda tu JSON al final del día.`),
+
+    mk("Estándar de calidad — Tareas ejecutables (≤ 60 min)",
+`Cada tarjeta debe ser una acción concreta.
+Formato recomendado: verbo + resultado.
+
+Ejemplos:
+- “Publicar anuncio en Marketplace”
+- “Confirmar compatibilidad con foto”
+- “Agendar 2 entregas (1–2 pm)”
+
+Si algo tarda más de 60 min: divídelo en 2–4 tarjetas.`),
+
+    mk("Calendario — Cómo activar fechas y plan semanal",
+`Una tarjeta aparece en Calendario solo si tiene Vence (fecha).
+
+Atajos:
+- Hoy → ejecución inmediata
+- Esta semana → planeación realista
+- Vencidas → urgencias
+- Sin fecha → backlog (no operativo)
+
+Recomendación: 2–4 tarjetas con fecha por día.`),
+
+    mk("Delegación — Cómo evitar que todo dependa de ti",
+`Usa delegación como sistema.
+- Delegable = Sí si alguien más lo puede ejecutar.
+- Delegado a: asigna un nombre/persona.
+
+Filtros:
+- Mías
+- Delegadas
+- Delegables
+- Sin asignar`),
+
+    mk("Checklist — Control y progreso real",
+`Checklist convierte intención en avance medible.
+Buenas prácticas:
+- 3–7 pasos por tarjeta
+- pasos verificables
+
+Ejemplo:
+[ ] Confirmar compatibilidad
+[ ] Enviar precio y condiciones
+[ ] Agendar entrega
+[ ] Cobrar / entregar`),
+
+    mk("Guardar y cargar — Persistencia (tu respaldo)",
+`- Guardar (💾): descarga tu tablero como JSON
+- Cargar (📂): restaura tu JSON y actualiza el tablero
+
+Recomendación:
+- guarda al final del día
+- guarda antes de cambios grandes`)
+  ];
+}
+
+function buildTutorialState(){
+  const base = structuredClone(DEFAULT);
+  base.lists = [
+    { id: TUTORIAL_LIST_ID, name: "📌 Inicio (Guía rápida)", cards: buildTutorialCards() },
+    ...base.lists
+  ];
+  return base;
+}
+
+function stripTutorialFromState(st){
+  if(!st || !Array.isArray(st.lists)) return st;
+  st.lists = st.lists.filter(l => l.id !== TUTORIAL_LIST_ID);
+  return st;
+}
+
+function hasTutorial(st){
+  return !!st?.lists?.some(l=>l.id===TUTORIAL_LIST_ID);
+}
+
+function uid(){ return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); }
+
+const DEFAULT = {
+  version: 2,
+  lists: [
+    { id: "semilla", name: "Semilla", cards: [] },
+    { id: "incubacion", name: "Incubación", cards: [] },
+    { id: "activos", name: "Activos", cards: [] },
+    { id: "hecho", name: "Hecho", cards: [] },
+  ]
+};
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const data = JSON.parse(raw);
+      // minimal validation
+      if(!data || !Array.isArray(data.lists)) return structuredClone(DEFAULT);
+      // if someone saved the tutorial board by mistake, strip it once they have real data
+      return data;
+    }
+
+    // First time: show tutorial once (per browser/device)
+    if(localStorage.getItem(FTU_KEY) !== "1"){
+      localStorage.setItem(FTU_KEY, "1");
+      return buildTutorialState();
+    }
+
+    return structuredClone(DEFAULT);
+  }catch(e){
+    return structuredClone(DEFAULT);
+  }
+}
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let state = load();
+
+/* ========= Helpers ========= */
+function todayISO(){
+  const d = new Date();
+  const tzOff = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - tzOff*60000);
+  return local.toISOString().slice(0,10);
+}
+function parseISO(s){
+  if(!s) return null;
+  const [y,m,dd] = s.split("-").map(Number);
+  if(!y||!m||!dd) return null;
+  return new Date(y, m-1, dd);
+}
+function fmtShort(iso){
+  if(!iso) return "";
+  const d = parseISO(iso);
+  if(!d) return "";
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yy = d.getFullYear();
+  return `${dd}/${mm}/${yy}`;
+}
+function startOfWeek(d){ // Monday
+  const x = new Date(d);
+  const day = (x.getDay()+6)%7; // 0 Monday
+  x.setDate(x.getDate()-day);
+  x.setHours(0,0,0,0);
+  return x;
+}
+function endOfWeek(d){
+  const s = startOfWeek(d);
+  const e = new Date(s);
+  e.setDate(e.getDate()+6);
+  e.setHours(23,59,59,999);
+  return e;
+}
+function checklistProgress(card){
+  const items = card.checklist || [];
+  if(items.length === 0) return null;
+  const done = items.filter(x=>x.done).length;
+  return Math.round((done/items.length)*100);
+}
+function normalizeName(s){
+  return (s||"").trim();
+}
+
+/* ========= Filters ========= */
+let view = "board"; // board | cal | energy
+let q = "";
+let assign = "all";
+let dateChip = "all";
+
+function filteredCards(){
+  const query = q.trim().toLowerCase();
+  const tISO = todayISO();
+  const t = parseISO(tISO);
+  const wkS = startOfWeek(t);
+  const wkE = endOfWeek(t);
+
+  const out = [];
+  for(const list of state.lists){
+    for(const c of list.cards){
+      // search
+      const blob = (c.title+" "+(c.notes||"")+" "+(c.delegatedTo||"")).toLowerCase();
+      if(query && !blob.includes(query)) continue;
+
+      // assignment filter
+      const delegated = normalizeName(c.delegatedTo).length>0;
+      const delegable = !!c.delegable;
+      if(assign==="mine" && delegated) continue;
+      if(assign==="delegated" && !delegated) continue;
+      if(assign==="delegable" && !delegable) continue;
+      if(assign==="unassigned" && !(delegable && !delegated)) continue;
+      if(assign.startsWith("to:")){
+        const who = assign.slice(3);
+        if(normalizeName(c.delegatedTo)!==who) continue;
+      }
+
+      // date chips
+      const due = c.due || "";
+      if(dateChip==="today"){
+        if(due !== tISO) continue;
+      }else if(dateChip==="overdue"){
+        if(!due) continue;
+        const dd = parseISO(due);
+        if(!dd || dd >= t) continue;
+      }else if(dateChip==="week"){
+        if(!due) continue;
+        const dd = parseISO(due);
+        if(!dd) continue;
+        if(dd < wkS || dd > wkE) continue;
+      }else if(dateChip==="nodate"){
+        if(!!due) continue;
+      }
+      out.push({listId:list.id, card:c});
+    }
+  }
+  return out;
+}
+
+/* ========= UI refs ========= */
+const elBoard = document.getElementById("board");
+const elEnergyBoard = document.getElementById("energyBoard");
+
+const elViewBoard = document.getElementById("viewBoard");
+const elViewCal = document.getElementById("viewCal");
+const elViewEnergy = document.getElementById("viewEnergy");
+
+const tabBoard = document.getElementById("tabBoard");
+const tabCal = document.getElementById("tabCal");
+const tabEnergy = document.getElementById("tabEnergy");
+
+const elQ = document.getElementById("q");
+const elAssign = document.getElementById("assignFilter");
+const elDateChips = document.getElementById("dateChips");
+
+/* Calendar refs */
+const calGrid = document.getElementById("calGrid");
+const calLabel = document.getElementById("calLabel");
+const calPrev = document.getElementById("calPrev");
+const calNext = document.getElementById("calNext");
+const calTodayBtn = document.getElementById("calToday");
+
+/* Popover refs */
+const dayPop = document.getElementById("dayPop");
+const popTitle = document.getElementById("popTitle");
+const popBody = document.getElementById("popBody");
+const popClose = document.getElementById("popClose");
+
+/* Modal refs */
+const modal = document.getElementById("modal");
+const modalTitle = document.getElementById("modalTitle");
+const btnClose = document.getElementById("btnClose");
+const btnSave = document.getElementById("btnSave");
+const btnDelete = document.getElementById("btnDelete");
+const btnAdd = document.getElementById("btnAdd");
+const btnImport = document.getElementById("btnImport");
+const btnExport = document.getElementById("btnExport");
+const fileInput = document.getElementById("fileInput");
+const themeToggle = document.getElementById("themeToggle");
+
+const fTitle = document.getElementById("fTitle");
+const fList = document.getElementById("fList");
+const fDelegable = document.getElementById("fDelegable");
+const fDelegatedTo = document.getElementById("fDelegatedTo");
+const fEstimate = document.getElementById("fEstimate");
+const fDue = document.getElementById("fDue");
+const fEnergy = document.getElementById("fEnergy");
+const fNotes = document.getElementById("fNotes");
+const chkList = document.getElementById("chkList");
+const btnAddChk = document.getElementById("btnAddChk");
+
+let editing = null; // {listId, cardId}
+
+/* ========= Rendering ========= */
+function ensureAssignOptions(){
+  // rebuild assignment select with delegatees found
+  const base = [
+    ["all","Asignación: Todas"],
+    ["mine","Asignación: Mías"],
+    ["delegated","Asignación: Delegadas"],
+    ["delegable","Asignación: Delegables"],
+    ["unassigned","Asignación: Sin asignar"],
+  ];
+  const people = new Set();
+  for(const l of state.lists){
+    for(const c of l.cards){
+      const who = normalizeName(c.delegatedTo);
+      if(who) people.add(who);
+    }
+  }
+  const sel = elAssign.value;
+  elAssign.innerHTML = "";
+  for(const [v,t] of base){
+    const o = document.createElement("option");
+    o.value=v; o.textContent=t;
+    elAssign.appendChild(o);
+  }
+  if(people.size){
+    const sep = document.createElement("option");
+    sep.disabled = true;
+    sep.textContent = "────────";
+    elAssign.appendChild(sep);
+    [...people].sort((a,b)=>a.localeCompare(b)).forEach(p=>{
+      const o = document.createElement("option");
+      o.value = "to:"+p;
+      o.textContent = "Delegado a: " + p;
+      elAssign.appendChild(o);
+    });
+  }
+  // restore if possible
+  if([...elAssign.options].some(o=>o.value===sel)) elAssign.value=sel;
+  else elAssign.value="all";
+}
+
+function renderBoard(){
+  ensureAssignOptions();
+  const f = filteredCards();
+  const byList = new Map(state.lists.map(l=>[l.id, []]));
+  for(const x of f){
+    if(!byList.has(x.listId)) byList.set(x.listId, []);
+    byList.get(x.listId).push(x.card);
+  }
+
+  elBoard.innerHTML = "";
+  for(const list of state.lists){
+    const cards = (byList.get(list.id) || []);
+    // sort: due asc, then title
+    cards.sort((a,b)=>{
+      const da = a.due || "9999-12-31";
+      const db = b.due || "9999-12-31";
+      if(da!==db) return da<db?-1:1;
+      return (a.title||"").localeCompare(b.title||"");
+    });
+
+    const col = document.createElement("div");
+    col.className = "col";
+    const head = document.createElement("div");
+    head.className = "colhead";
+    head.innerHTML = `<div>${list.name} <small>(${cards.length})</small></div>`;
+    col.appendChild(head);
+
+    const box = document.createElement("div");
+    box.className = "cards";
+    for(const c of cards){
+      box.appendChild(renderCard(c, list.id));
+    }
+    col.appendChild(box);
+    elBoard.appendChild(col);
+  }
+}
+
+function renderCard(c, listId){
+  const div = document.createElement("div");
+  div.className = "card";
+  div.addEventListener("click", (e)=>{ e.stopPropagation(); openModal(listId, c.id); });
+
+  const tISO = todayISO();
+  const due = c.due || "";
+  const overdue = due && due < tISO;
+  const prog = checklistProgress(c);
+  const delegated = normalizeName(c.delegatedTo).length>0;
+
+  const energyPill = (c.energy==="ALTO") ? "pill purple" : (c.energy==="BAJO" ? "pill" : "pill blue");
+  const energyLabel = c.energy || "NEUTRO";
+
+  const bits = [];
+  if(due){
+    bits.push(`<span class="pill ${overdue ? 'red' : ''}">📅 <strong>${fmtShort(due)}</strong></span>`);
+  }else{
+    bits.push(`<span class="pill">📅 <strong>Sin fecha</strong></span>`);
+  }
+  if(c.estimate){
+    bits.push(`<span class="pill">⏱ <strong>${c.estimate}m</strong></span>`);
+  }
+  bits.push(`<span class="${energyPill}">⚡ <strong>${energyLabel}</strong></span>`);
+  if(delegated){
+    bits.push(`<span class="pill green">🤝 <strong>${escapeHtml(c.delegatedTo)}</strong></span>`);
+  }else if(c.delegable){
+    bits.push(`<span class="pill">↗ <strong>Delegable</strong></span>`);
+  }
+
+  div.innerHTML = `
+    <div class="title">${escapeHtml(c.title||"(Sin título)")}</div>
+    <div class="meta">${bits.join("")}</div>
+    ${prog===null ? "" : `<div class="bar" title="${prog}%"><div style="width:${prog}%;"></div></div>`}
+  `;
+  return div;
+}
+
+function renderEnergy(){
+  ensureAssignOptions();
+  const f = filteredCards();
+  const groups = { BAJO: [], NEUTRO: [], ALTO: [] };
+  for(const x of f){
+    const e = (x.card.energy || "NEUTRO").toUpperCase();
+    if(groups[e]) groups[e].push(x);
+    else groups.NEUTRO.push(x);
+  }
+  const cols = [
+    {id:"BAJO", name:"BAJO", hint:"fácil / sin fricción"},
+    {id:"NEUTRO", name:"NEUTRO", hint:"normal"},
+    {id:"ALTO", name:"ALTO", hint:"demanda enfoque"},
+  ];
+  elEnergyBoard.innerHTML = "";
+  for(const colDef of cols){
+    const col = document.createElement("div");
+    col.className = "col";
+    const head = document.createElement("div");
+    head.className = "colhead";
+    head.innerHTML = `<div>${colDef.name} <small>${colDef.hint}</small></div>`;
+    col.appendChild(head);
+
+    const box = document.createElement("div");
+    box.className = "cards";
+    const items = groups[colDef.id];
+    // sort by due
+    items.sort((a,b)=>((a.card.due||"9999-12-31") < (b.card.due||"9999-12-31") ? -1 : 1));
+    for(const it of items){
+      box.appendChild(renderCard(it.card, it.listId));
+    }
+    col.appendChild(box);
+    elEnergyBoard.appendChild(col);
+  }
+}
+
+/* ========= Calendar ========= */
+let calCursor = (function(){
+  const t = parseISO(todayISO());
+  return new Date(t.getFullYear(), t.getMonth(), 1);
+})();
+
+function monthLabel(d){
+  const months = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  return `${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function renderCalendar(){
+  ensureAssignOptions();
+  calLabel.textContent = "Calendario · " + monthLabel(calCursor);
+
+  calGrid.innerHTML = "";
+  const dows = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+  for(const w of dows){
+    const el = document.createElement("div");
+    el.className = "dow";
+    el.textContent = w;
+    calGrid.appendChild(el);
+  }
+
+  const first = new Date(calCursor.getFullYear(), calCursor.getMonth(), 1);
+  const firstDow = (first.getDay()+6)%7; // Monday=0
+  const start = new Date(first);
+  start.setDate(first.getDate() - firstDow);
+
+  const last = new Date(calCursor.getFullYear(), calCursor.getMonth()+1, 0);
+  const lastDow = (last.getDay()+6)%7;
+  const end = new Date(last);
+  end.setDate(last.getDate() + (6-lastDow));
+
+  // Build map date->events
+  const f = filteredCards(); // apply search + assignment + date chips (chips may hide; ok)
+  const map = new Map();
+  for(const it of f){
+    const due = it.card.due;
+    if(!due) continue;
+    if(!map.has(due)) map.set(due, []);
+    map.get(due).push(it);
+  }
+  for(const [k,arr] of map){
+    // stable sort
+    arr.sort((a,b)=>((a.card.estimate||9999)-(b.card.estimate||9999)) || (a.card.title||"").localeCompare(b.card.title||""));
+  }
+
+  const tISO = todayISO();
+
+  const days = [];
+  for(let d = new Date(start); d <= end; d.setDate(d.getDate()+1)){
+    days.push(new Date(d));
+  }
+
+  for(const d of days){
+    const iso = new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    const inMonth = d.getMonth() === calCursor.getMonth();
+    const day = document.createElement("div");
+    day.className = "day";
+    day.style.opacity = inMonth ? "1" : ".55";
+    day.addEventListener("click", ()=> openCreateWithDate(iso));
+
+    const num = document.createElement("div");
+    num.className = "num";
+    num.innerHTML = `<span>${d.getDate()}</span>${iso===tISO ? `<span class="badgeToday">HOY</span>` : ""}`;
+    day.appendChild(num);
+
+    const events = document.createElement("div");
+    events.className = "events";
+
+    const items = map.get(iso) || [];
+    const show = items.slice(0,3);
+    for(const it of show){
+      const evt = document.createElement("div");
+      const e = (it.card.energy||"NEUTRO").toUpperCase();
+      evt.className = "evt " + (e==="BAJO" ? "low" : (e==="ALTO" ? "high" : "neutral"));
+      evt.innerHTML = `<span class="dot"></span><span style="overflow:hidden;text-overflow:ellipsis;">${escapeHtml(it.card.title||"(Sin título)")}</span><span class="muted" style="margin-left:auto;">${it.card.estimate? it.card.estimate+"m":""}</span>`;
+      evt.addEventListener("click", (ev)=>{ ev.stopPropagation(); openModal(it.listId, it.card.id); });
+      events.appendChild(evt);
+    }
+    day.appendChild(events);
+
+    if(items.length > 3){
+      const more = document.createElement("div");
+      more.className = "more";
+      more.textContent = `+${items.length-3} más`;
+      more.addEventListener("click", (ev)=>{ ev.stopPropagation(); openDayPopover(iso, items); });
+      day.appendChild(more);
+    }
+
+    calGrid.appendChild(day);
+  }
+}
+
+function openDayPopover(iso, items){
+  popTitle.textContent = fmtShort(iso);
+  popBody.innerHTML = "";
+  items.forEach(it=>{
+    const row = document.createElement("div");
+    row.className = "evt";
+    const e = (it.card.energy||"NEUTRO").toUpperCase();
+    row.classList.add(e==="BAJO" ? "low" : (e==="ALTO" ? "high" : "neutral"));
+    row.innerHTML = `<span class="dot"></span><span style="overflow:hidden;text-overflow:ellipsis;">${escapeHtml(it.card.title||"(Sin título)")}</span><span class="muted" style="margin-left:auto;">${it.card.estimate? it.card.estimate+"m":""}</span>`;
+    row.addEventListener("click", ()=>{ closePopover(); openModal(it.listId, it.card.id); });
+    popBody.appendChild(row);
+  });
+  dayPop.classList.add("open");
+}
+function closePopover(){ dayPop.classList.remove("open"); }
+
+/* ========= Modal ========= */
+function openModal(listId, cardId){
+  const list = state.lists.find(l=>l.id===listId);
+  if(!list) return;
+  const card = list.cards.find(c=>c.id===cardId);
+  if(!card) return;
+
+  editing = { listId, cardId };
+  modalTitle.textContent = "Editar";
+  btnDelete.classList.remove("hide");
+
+  fTitle.value = card.title || "";
+  fList.value = listId;
+  fDelegable.value = card.delegable ? "si" : "no";
+  fDelegatedTo.value = card.delegatedTo || "";
+  fEstimate.value = card.estimate ?? "";
+  fDue.value = card.due || "";
+  fEnergy.value = (card.energy || "NEUTRO").toUpperCase();
+  fNotes.value = card.notes || "";
+
+  syncDelegationUI();
+  renderChecklist(card);
+
+  modal.classList.add("open");
+}
+function openCreateWithDate(iso){
+  openCreate({ due: iso });
+}
+function openCreate(seed={}){
+  editing = { listId: null, cardId: null };
+  modalTitle.textContent = "Nueva tarea";
+  btnDelete.classList.add("hide");
+
+  fTitle.value = seed.title || "";
+  fList.value = seed.listId || "activos";
+  fDelegable.value = seed.delegable ? "si" : "no";
+  fDelegatedTo.value = seed.delegatedTo || "";
+  fEstimate.value = seed.estimate ?? "";
+  fDue.value = seed.due || "";
+  fEnergy.value = (seed.energy || "NEUTRO").toUpperCase();
+  fNotes.value = seed.notes || "";
+
+  syncDelegationUI();
+  chkList.innerHTML = "";
+
+  modal.classList.add("open");
+}
+
+function closeModal(){
+  modal.classList.remove("open");
+  editing = null;
+}
+
+function syncDelegationUI(){
+  const isDelegable = fDelegable.value === "si";
+  fDelegatedTo.disabled = !isDelegable;
+  if(!isDelegable) fDelegatedTo.value = "";
+}
+
+function renderChecklist(card){
+  chkList.innerHTML = "";
+  const items = card.checklist || [];
+  items.forEach((it, idx)=>{
+    const row = document.createElement("div");
+    row.className = "chk";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = !!it.done;
+    cb.addEventListener("change", ()=>{ it.done = cb.checked; }); // fix: true toggle, no immediate uncheck
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = it.text || "";
+    input.addEventListener("input", ()=>{ it.text = input.value; });
+
+    const del = document.createElement("button");
+    del.className = "x";
+    del.type = "button";
+    del.textContent = "✕";
+    del.addEventListener("click", ()=>{
+      items.splice(idx,1);
+      renderChecklist(card);
+    });
+
+    row.appendChild(cb);
+    row.appendChild(input);
+    row.appendChild(del);
+    chkList.appendChild(row);
+  });
+}
+
+function collectChecklist(){
+  const rows = [...chkList.querySelectorAll(".chk")];
+  const items = [];
+  for(const row of rows){
+    const cb = row.querySelector('input[type="checkbox"]');
+    const txt = row.querySelector('input[type="text"]');
+    if(!txt) continue;
+    const text = (txt.value||"").trim();
+    if(!text) continue;
+    items.push({ text, done: !!cb?.checked });
+  }
+  return items;
+}
+
+function addChecklistItem(){
+  const row = document.createElement("div");
+  row.className = "chk";
+
+  const cb = document.createElement("input");
+  cb.type = "checkbox";
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.placeholder = "Nueva tarea…";
+
+  const del = document.createElement("button");
+  del.className = "x";
+  del.type = "button";
+  del.textContent = "✕";
+  del.addEventListener("click", ()=> row.remove());
+
+  row.appendChild(cb); row.appendChild(input); row.appendChild(del);
+  chkList.appendChild(row);
+  input.focus();
+}
+
+function saveCard(){
+  const title = (fTitle.value||"").trim();
+  if(!title){ alert("Pon un título."); fTitle.focus(); return; }
+
+  // If user is creating their first real work, remove tutorial list (if present).
+  // Editing tutorial cards does NOT remove it.
+  const isEditingTutorial = !!(editing && editing.cardId && editing.listId === TUTORIAL_LIST_ID);
+  if(!isEditingTutorial && hasTutorial(state)){
+    stripTutorialFromState(state);
+  }
+
+  const targetListId = fList.value;
+  const delegable = fDelegable.value === "si";
+  const delegatedTo = delegable ? (fDelegatedTo.value||"").trim() : "";
+  const estimate = Number(fEstimate.value||0) || 0;
+  const due = fDue.value || "";
+  const energy = (fEnergy.value||"NEUTRO").toUpperCase();
+  const notes = fNotes.value || "";
+  const checklist = collectChecklist();
+
+  if(editing && editing.cardId){
+    const fromList = state.lists.find(l=>l.id===editing.listId);
+    const card = fromList?.cards.find(c=>c.id===editing.cardId);
+    if(!card) return;
+
+    // move list if needed
+    if(editing.listId !== targetListId){
+      fromList.cards = fromList.cards.filter(c=>c.id!==editing.cardId);
+      const toList = state.lists.find(l=>l.id===targetListId);
+      toList.cards.push(card);
+      editing.listId = targetListId;
+    }
+
+    card.title = title;
+    card.delegable = delegable;
+    card.delegatedTo = delegatedTo;
+    card.estimate = estimate;
+    card.due = due;
+    card.energy = energy;
+    card.notes = notes;
+    card.checklist = checklist;
+  }else{
+    const toList = state.lists.find(l=>l.id===targetListId);
+    const card = {
+      id: uid(),
+      title,
+      notes,
+      energy,
+      delegable,
+      delegatedTo,
+      due,
+      estimate,
+      checklist
+    };
+    toList.cards.push(card);
+  }
+
+  save();
+  closeModal();
+  rerender();
+}
+
+function deleteCard(){
+  if(!(editing && editing.cardId)) return;
+  if(!confirm("¿Eliminar esta tarjeta?")) return;
+  const list = state.lists.find(l=>l.id===editing.listId);
+  if(!list) return;
+  list.cards = list.cards.filter(c=>c.id!==editing.cardId);
+  save();
+  closeModal();
+  rerender();
+}
+
+/* ========= Import / Export ========= */
+function escapeHtml(s){
+  return (s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+
+function mapListName(name){
+  const n = (name||"").toLowerCase();
+  if(n.includes("semilla") || n.includes("idea") || n.includes("backlog")) return "semilla";
+  if(n.includes("incub") || n.includes("en curso") || n.includes("proceso")) return "incubacion";
+  if(n.includes("hecho") || n.includes("done") || n.includes("complet")) return "hecho";
+  // "esta semana" and unknown go to activos
+  return "activos";
+}
+
+function normalizeFromFragmentumBoard(data){
+  // {board:{name, lists:[{name,cards:[]}]}}
+  const out = structuredClone(DEFAULT);
+  const lists = data?.board?.lists || [];
+  for(const L of lists){
+    const target = mapListName(L.name);
+    const toList = out.lists.find(x=>x.id===target);
+    const cards = L.cards || [];
+    for(const c of cards){
+      toList.cards.push({
+        id: c.id || uid(),
+        title: c.title || "(Sin título)",
+        notes: c.notes || "",
+        energy: "NEUTRO",
+        delegable: !!c.delegated_to || c.owner==="Delegable" || c.owner==="Delegable",
+        delegatedTo: c.delegated_to || c.delegatedTo || "",
+        due: c.due || "",
+        estimate: c.estimate_minutes || c.estimate || 0,
+        checklist: Array.isArray(c.checklist) ? c.checklist.map(x=>({text:x.text||"", done:!!x.done})) : []
+      });
+    }
+  }
+  return out;
+}
+
+function normalizeFromMomentumBackup(data){
+  // legacy formats: {cards:[...]} or {lists:[...]}
+  if(Array.isArray(data?.lists)){
+    // attempt to map to our format
+    const out = structuredClone(DEFAULT);
+    for(const L of data.lists){
+      const target = mapListName(L.name || L.id);
+      const toList = out.lists.find(x=>x.id===target);
+      const cards = L.cards || [];
+      for(const c of cards){
+        toList.cards.push({
+          id: c.id || uid(),
+          title: c.title || "(Sin título)",
+          notes: c.notes || "",
+          energy: (c.energy || "NEUTRO").toUpperCase(),
+          delegable: !!c.delegable,
+          delegatedTo: c.delegatedTo || c.delegated_to || "",
+          due: c.due || "",
+          estimate: c.estimate || c.estimate_minutes || 0,
+          checklist: Array.isArray(c.checklist) ? c.checklist.map(x=>({text:x.text||"", done:!!x.done})) : []
+        });
+      }
+    }
+    return out;
+  }
+  if(Array.isArray(data?.cards)){
+    const out = structuredClone(DEFAULT);
+    const toList = out.lists.find(x=>x.id==="activos");
+    for(const c of data.cards){
+      toList.cards.push({
+        id: c.id || uid(),
+        title: c.title || "(Sin título)",
+        notes: c.notes || "",
+        energy: (c.energy || "NEUTRO").toUpperCase(),
+        delegable: !!c.delegable,
+        delegatedTo: c.delegatedTo || c.delegated_to || "",
+        due: c.due || "",
+        estimate: c.estimate || c.estimate_minutes || 0,
+        checklist: Array.isArray(c.checklist) ? c.checklist.map(x=>({text:x.text||"", done:!!x.done})) : []
+      });
+    }
+    return out;
+  }
+  return null;
+}
+
+function importJSON(file){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      let normalized = null;
+      if(data?.board?.lists) normalized = normalizeFromFragmentumBoard(data);
+      else normalized = normalizeFromMomentumBackup(data);
+
+      if(!normalized){ alert("No reconocí el formato."); return; }
+
+      localStorage.setItem(FTU_KEY, "1");
+      state = normalized;
+      save();
+      rerender();
+      alert("Importado ✅");
+    }catch(e){
+      alert("JSON inválido.");
+    }
+  };
+  reader.readAsText(file);
+}
+
+function exportJSON(){
+  // Never export the tutorial list (public build).
+  const payload = structuredClone(state);
+  stripTutorialFromState(payload);
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "momentum_export.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+
+/* ========= View switching ========= */
+function setView(next){
+  view = next;
+  tabBoard.classList.toggle("active", view==="board");
+  tabCal.classList.toggle("active", view==="cal");
+  tabEnergy.classList.toggle("active", view==="energy");
+
+  elViewBoard.classList.toggle("hide", view!=="board");
+  elViewCal.classList.toggle("hide", view!=="cal");
+  elViewEnergy.classList.toggle("hide", view!=="energy");
+
+  rerender();
+}
+
+function rerender(){
+  if(view==="board") renderBoard();
+  if(view==="cal") renderCalendar();
+  if(view==="energy") renderEnergy();
+}
+
+/* ========= Events ========= */
+tabBoard.addEventListener("click", ()=>setView("board"));
+tabCal.addEventListener("click", ()=>setView("cal"));
+tabEnergy.addEventListener("click", ()=>setView("energy"));
+
+elQ.addEventListener("input", ()=>{ q = elQ.value; rerender(); });
+elAssign.addEventListener("change", ()=>{ assign = elAssign.value; rerender(); });
+
+elDateChips.addEventListener("click", (e)=>{
+  const chip = e.target.closest(".chip");
+  if(!chip) return;
+  [...elDateChips.querySelectorAll(".chip")].forEach(c=>c.classList.remove("active"));
+  chip.classList.add("active");
+  dateChip = chip.dataset.chip;
+  rerender();
+});
+
+btnAdd.addEventListener("click", ()=>openCreate());
+btnClose.addEventListener("click", closeModal);
+modal.addEventListener("click", (e)=>{ if(e.target===modal) closeModal(); });
+
+btnSave.addEventListener("click", saveCard);
+btnDelete.addEventListener("click", deleteCard);
+btnAddChk.addEventListener("click", addChecklistItem);
+fDelegable.addEventListener("change", syncDelegationUI);
+
+btnImport.addEventListener("click", ()=> fileInput.click());
+fileInput.addEventListener("change", (e)=>{ const f = e.target.files?.[0]; if(f) importJSON(f); fileInput.value=""; });
+
+btnExport.addEventListener("click", exportJSON);
+
+/* Calendar nav */
+calPrev.addEventListener("click", ()=>{
+  calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth()-1, 1);
+  renderCalendar();
+});
+calNext.addEventListener("click", ()=>{
+  calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth()+1, 1);
+  renderCalendar();
+});
+calTodayBtn.addEventListener("click", ()=>{
+  const t = parseISO(todayISO());
+  calCursor = new Date(t.getFullYear(), t.getMonth(), 1);
+  renderCalendar();
+});
+
+/* Popover */
+popClose.addEventListener("click", closePopover);
+dayPop.addEventListener("click", (e)=>{ if(e.target===dayPop) closePopover(); });
+
+/* Theme */
+(function(){
+  const saved = localStorage.getItem(THEME_KEY);
+  if(saved) document.documentElement.dataset.theme = saved;
+  themeToggle.textContent = (document.documentElement.dataset.theme === "google") ? "🟦" : "🍎";
+  themeToggle.addEventListener("click", ()=>{
+    const next = (document.documentElement.dataset.theme === "google") ? "apple" : "google";
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem(THEME_KEY, next);
+    themeToggle.textContent = (next === "google") ? "🟦" : "🍎";
+  });
+})();
+
+/* Init */
+rerender();
+</script>
+</body>
+</html>
