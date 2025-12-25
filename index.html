@@ -105,12 +105,18 @@
 
     .iconbar{ display:flex; gap: 8px; }
     .btn-icon{
-      width: 40px; height: 40px;
+      min-width: 32px;
+      height: 32px;
+      padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.65);
-      box-shadow: var(--shadow-1);
+      border: 1px solid transparent;
+      background: transparent;
+      box-shadow: none;
       cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 16px;
       display:grid; place-items:center;
       transition: transform .08s ease, box-shadow .15s ease, background .15s ease;
     }
@@ -124,6 +130,16 @@
     }
 
     .filters{
+      /* layout styles here */
+    }
+    #assignFilter{
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.8);
+      font-size: 13px;
+    }
+    
       display:flex; align-items:center; gap: 10px; flex-wrap:wrap;
       padding: 10px 0 12px;
     }
@@ -642,7 +658,8 @@
         <button class="btn-icon" id="btnAdd" title="Nueva tarea">＋</button>
         <button class="btn-icon" id="btnImport" title="Importar JSON">📂</button>
         <button class="btn-icon" id="btnExport" title="Exportar JSON">💾</button>
-        <button class="btn-icon" id="themeToggle" title="Tema">🎨</button>
+        <button class="btn-icon" id="btnReset" title="Borrar tablero">🗑️</button>
+        <button class="btn-icon" id="themeToggle" title="Tema claro/oscuro">☀️</button>
       </div>
       <input id="fileInput" type="file" accept=".json" class="hide"/>
     </div>
@@ -1061,6 +1078,7 @@ const btnDelete = document.getElementById("btnDelete");
 const btnAdd = document.getElementById("btnAdd");
 const btnImport = document.getElementById("btnImport");
 const btnExport = document.getElementById("btnExport");
+const btnReset = document.getElementById("btnReset");
 const fileInput = document.getElementById("fileInput");
 const themeToggle = document.getElementById("themeToggle");
 
@@ -1638,7 +1656,34 @@ function importJSON(file){
       if(!normalized){ alert("No reconocí el formato."); return; }
 
       localStorage.setItem(FTU_KEY, "1");
-      state = normalized;
+
+      // Decidir si reemplazar o sumar
+      let merge = false;
+      const hasExisting =
+        state && Array.isArray(state.lists) &&
+        state.lists.some(l => Array.isArray(l.cards) && l.cards.length);
+
+      if(hasExisting){
+        const replace = confirm("¿Cómo quieres importar?\n\nAceptar = Reemplazar tablero actual\nCancelar = Sumar al tablero actual");
+        merge = !replace;
+      }
+
+      if(!hasExisting || !merge){
+        // Reemplazar tablero completo
+        state = normalized;
+      } else {
+        // Sumar listas / tarjetas al tablero actual
+        const byId = new Map(state.lists.map(l => [l.id, l]));
+        for(const list of normalized.lists || []){
+          const existing = byId.get(list.id);
+          if(existing){
+            existing.cards = (existing.cards || []).concat(list.cards || []);
+          } else {
+            state.lists.push(list);
+          }
+        }
+      }
+
       save();
       rerender();
       alert("Importado ✅");
@@ -1714,6 +1759,14 @@ btnImport.addEventListener("click", ()=> fileInput.click());
 fileInput.addEventListener("change", (e)=>{ const f = e.target.files?.[0]; if(f) importJSON(f); fileInput.value=""; });
 
 btnExport.addEventListener("click", exportJSON);
+btnReset.addEventListener("click", ()=>{
+  if(confirm("Esto borrará TODO el tablero actual y volverá a la guía de inicio. ¿Seguro?")){
+    localStorage.removeItem(STORAGE_KEY);
+    state = buildTutorialState();
+    save();
+    rerender();
+  }
+});
 
 /* Calendar nav */
 calPrev.addEventListener("click", ()=>{
@@ -1738,12 +1791,21 @@ dayPop.addEventListener("click", (e)=>{ if(e.target===dayPop) closePopover(); })
 (function(){
   const saved = localStorage.getItem(THEME_KEY);
   if(saved) document.documentElement.dataset.theme = saved;
-  themeToggle.textContent = (document.documentElement.dataset.theme === "google") ? "🟦" : "🍎";
+
+  function applyThemeLabel(){
+    const isLight = document.documentElement.dataset.theme === "google";
+    themeToggle.textContent = isLight ? "☀️" : "🌙";
+    themeToggle.setAttribute("aria-label", isLight ? "Cambiar a modo oscuro" : "Cambiar a modo claro");
+    themeToggle.title = isLight ? "Modo claro" : "Modo oscuro";
+  }
+
+  applyThemeLabel();
+
   themeToggle.addEventListener("click", ()=>{
     const next = (document.documentElement.dataset.theme === "google") ? "apple" : "google";
     document.documentElement.dataset.theme = next;
     localStorage.setItem(THEME_KEY, next);
-    themeToggle.textContent = (next === "google") ? "🟦" : "🍎";
+    applyThemeLabel();
   });
 })();
 
