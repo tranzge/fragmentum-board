@@ -511,7 +511,119 @@
     }
     *::-webkit-scrollbar-track{ background:transparent; }
 
-    /* Utility */
+    
+
+    /* ========= Mobile polish (<= 520px) ========= */
+    @media (max-width: 520px){
+      header{ backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+      .topbar{
+        flex-direction: column;
+        align-items: stretch;
+        padding: 10px 12px;
+        gap: 10px;
+      }
+      .brand{
+        justify-content: center;
+        font-size: 16px;
+      }
+      .controls{
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .seg{
+        width: 100%;
+        justify-content: space-between;
+      }
+      .seg button{
+        flex: 1 1 0;
+        text-align: center;
+        padding: 10px 0;
+      }
+      .iconbar{
+        width: 100%;
+        justify-content: space-between;
+      }
+      .btn-icon{
+        width: 38px; height: 38px;
+      }
+
+      main{
+        padding: 12px 12px 28px;
+      }
+
+      .filters{
+        gap: 8px;
+        padding: 8px 0 10px;
+      }
+      .search{
+        flex: 1 1 100%;
+        min-width: 100%;
+      }
+      /* Make assignment select full width on mobile */
+      .filters > div[style*="min-width:260px"]{
+        min-width: 100% !important;
+        flex: 1 1 100% !important;
+      }
+
+      /* Chips: horizontal scroll instead of wrapping into two rows */
+      .chiprow{
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 6px;
+      }
+      .chip{
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+
+      /* Board cards: tighter */
+      .colhead{ padding: 10px 10px 8px; }
+      .cards{ padding: 10px; gap: 8px; }
+      .card{ padding: 10px; }
+      .title{ font-size: 14px; }
+      .pill{ padding: 4px 7px; }
+
+      /* Calendar: reduce cell height and clutter */
+      .day{ min-height: 92px; padding: 6px; }
+      .events{ max-height: 62px; }
+      .evt{
+        padding: 5px 6px;
+        font-size: 11px;
+      }
+      .dow{ padding: 8px 6px; font-size: 12px; }
+
+      /* Modal: stack header buttons nicely */
+      .modalHead{
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .modalHead .hTitle{
+        width: 100%;
+        text-align: left;
+      }
+      .modalHead > div{
+        width: 100%;
+        justify-content: flex-end;
+      }
+      .modalCard{
+        width: min(860px, 98vw);
+        max-height: min(860px, 94vh);
+      }
+    }
+
+    /* ========= Small-phone polish (<= 360px) ========= */
+    @media (max-width: 360px){
+      .btn-icon{ width: 36px; height: 36px; }
+      input[type="text"], input[type="number"], input[type="date"], select{
+        padding: 10px 10px;
+      }
+      .seg button{ padding: 9px 0; font-size: 13px; }
+    }
+
+
+  /* Utility */
     .hide{ display:none !important; }
   </style>
 </head>
